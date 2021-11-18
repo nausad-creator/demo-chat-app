@@ -1,0 +1,47 @@
+{
+	"name": "demo-chat-app",
+	"version": "1.0.0",
+	"description": "simple chat-app",
+	"main": "app.js",
+	"scripts": {
+		"dev": "nodemon index.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Nausad",
+	"license": "ISC",
+	"dependencies": {
+		"bcrypt": "^5.0.1",
+		"cors": "^2.8.5",
+		"express": "^4.17.1",
+		"fs": "0.0.1-security",
+		"helmet": "^4.6.0",
+		"http-status": "^1.5.0",
+		"joi": "^17.4.2",
+		"jsonwebtoken": "^8.5.1",
+		"moment": "^2.29.1",
+		"mongoose": "^6.0.13",
+		"morgan": "^1.10.0",
+		"nodemailer": "^6.7.1",
+		"shortid": "^2.2.16",
+		"validator": "^13.7.0",
+		"winston": "^3.3.3"
+	},
+	"devDependencies": {
+		"eslint": "^8.2.0",
+		"nodemon": "^2.0.15",
+		"prettier-eslint": "^13.0.0",
+		"eslint-config-airbnb-base": "^14.0.0",
+		"eslint-config-prettier": "^8.1.0",
+		"eslint-plugin-import": "^2.18.2",
+		"eslint-plugin-jest": "^24.0.1",
+		"eslint-plugin-prettier": "^3.1.1",
+		"eslint-plugin-security": "^1.4.0",
+		"faker": "^5.1.0",
+		"husky": "^7.0.0",
+		"jest": "^26.0.1",
+		"lint-staged": "^11.0.0",
+		"node-mocks-http": "^1.8.0",
+		"prettier": "^2.0.5",
+		"supertest": "^6.0.1"
+	}
+}
