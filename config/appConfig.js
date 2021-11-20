@@ -5,7 +5,7 @@ const envVarsSchema = Joi.object()
 		NODE_ENV: Joi.string().valid('production', 'development', 'test').default('development'),
 		PORT: Joi.number().default(8080),
 		JWT_SECRET: Joi.string().description('JWT secret key').default('some_random_jwt_token'),
-		JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
+		JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(60).description('minutes after which access tokens expire'),
 		JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(30).description('days after which refresh tokens expire'),
 		JWT_RESET_PASSWORD_EXPIRATION_MINUTES: Joi.number().default(10).description('minutes after which reset password token expires'),
 		JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: Joi.number().default(10).description('minutes after which verify email token expires'),

@@ -31,22 +31,23 @@ const queryUsers = async (filter, options) => {
 };
 
 const getUserByuserID = async (userID) => {
-	return User.findOne({ userID });
+	return User.findOne({ 'userID': userID });
 };
 
 const getUserByEmail = async (userEmail) => {
-	return User.findOne({ userEmail });
+	return User.findOne({ 'userEmail': userEmail });
 };
 
-const updateUserById = async (userId, updateBody) => {
-	const user = await getUserById(userId);
+const getUserByEmailOrMobile = async (userEmail, userMobile) => {
+	return User.findOne({ $or: [{ 'userEmail': userEmail }, { 'userMobile': userMobile }] });
+};
+
+const updateUserById = async (userID, userPassword) => {
+	const user = await getUserByuserID(userID);
 	if (!user) {
 		throw new ApiError(httpStatus.NOT_FOUND, 'User not found.');
 	}
-	if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
-		throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken.');
-	}
-	Object.assign(user, updateBody);
+	Object.assign(user, { userPassword });
 	await user.save();
 	return user;
 };
@@ -65,6 +66,7 @@ module.exports = {
 	queryUsers,
 	getUserByuserID,
 	getUserByEmail,
+	getUserByEmailOrMobile,
 	updateUserById,
 	deleteUserById,
 };
