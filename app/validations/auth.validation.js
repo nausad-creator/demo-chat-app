@@ -56,6 +56,16 @@ const verification = {
 	}),
 };
 
+const users = {
+	body: Joi.object().keys({
+		userID: Joi.string().required(),
+		searchword: Joi.string().required().allow(''),
+		sortBy: Joi.string().required().allow(''),
+		pagesize: Joi.string().required(),
+		page: Joi.string().required(),
+	}),
+};
+
 const resetPassword = {
 	body: Joi.object().keys({
 		userID: Joi.string().required(),
@@ -73,6 +83,7 @@ module.exports = {
 	register,
 	login,
 	logout,
+	users,
 	refreshTokens,
 	forgotPassword,
 	verification,

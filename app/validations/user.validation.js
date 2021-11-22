@@ -1,23 +1,27 @@
 const Joi = require('joi');
 const { password, objectId } = require('./custom.validation');
 
-const createUser = {
+const createChat = {
 	body: Joi.object().keys({
-		email: Joi.string().required().email(),
-		password: Joi.string().required().custom(password),
-		name: Joi.string().required(),
-		role: Joi.string().required().valid('user', 'admin'),
+		userID: Joi.string().required(),
+		userName: Joi.string().required(),
+		receiverUserID: Joi.string().required(),
+		receiverName: Joi.string().required(),
+		message: Joi.string().required(),
+		apiType: Joi.string().required(),
+		apiVersion: Joi.string().required()
 	}),
 };
 
-const getUsers = {
-	query: Joi.object().keys({
-		name: Joi.string(),
-		role: Joi.string(),
-		sortBy: Joi.string(),
-		limit: Joi.number().integer(),
-		page: Joi.number().integer(),
-	}),
+const getChats = {
+	body: Joi.object().keys({
+		userID: Joi.string().required(),
+		receiverUserID: Joi.string().required(),
+		searchword: Joi.string().required().allow(''),
+		sortBy: Joi.string().required().allow(''),
+		pagesize: Joi.string().required(),
+		page: Joi.string().required(),
+	})
 };
 
 const getUser = {
@@ -46,8 +50,8 @@ const deleteUser = {
 };
 
 module.exports = {
-	createUser,
-	getUsers,
+	createChat,
+	getChats,
 	getUser,
 	updateUser,
 	deleteUser,

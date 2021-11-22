@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
-const { toJSON, paginate } = require('./plugins');
+const { toJSON } = require('./plugins');
 const config = require('../../config/appConfig');
 
 const userSchema = mongoose.Schema(
@@ -65,6 +65,11 @@ const userSchema = mongoose.Schema(
 			default: 'a.png',
 			trim: true,
 		},
+		chats: [{
+			type: mongoose.SchemaTypes.ObjectId,
+			ref: 'Chat',
+			required: true,
+		}],
 		userDeviceType: {
 			type: String,
 			required: true,
@@ -105,19 +110,66 @@ const userSchema = mongoose.Schema(
 		timestamps: true,
 	}
 );
-
 // add plugin that converts mongoose to json
 userSchema.plugin(toJSON);
-userSchema.plugin(paginate);
 
 userSchema.statics.isEmailTaken = async function (userEmail, excludeUserId) {
 	const user = await this.findOne({ userEmail, _id: { $ne: excludeUserId } });
 	return !!user;
 };
 
+userSchema.statics.isMobileTaken = async function (userMobile, excludeUserId) {
+	const user = await this.findOne({ userMobile, _id: { $ne: excludeUserId } });
+	return !!user;
+};
+
 userSchema.methods.isPasswordMatch = async function (userPassword) {
 	const user = this;
 	return bcrypt.compare(userPassword, user.userPassword);
+};
+
+userSchema.statics.query_users = async function (filter, options) {
+	let sort = '';
+	if (options.sortBy) { // @param {string} [options.sortBy] - Sorting criteria using the format: sortField:(desc|asc). Multiple sorting criteria should be separated by commas (,)
+		const sortingCriteria = [];
+		options.sortBy.split(',').forEach((sortOption) => {
+			const [key, order] = sortOption.split(':');
+			sortingCriteria.push((order.trim() === 'desc' ? '-' : '') + key.trim());
+		});
+		sort = sortingCriteria.join(' ');
+	} else {
+		sort = '-createdAt'; // default sortBy decs order
+	}
+
+	const limit = options.pagesize && parseInt(options.pagesize, 10) > 0 ? parseInt(options.pagesize, 10) : 10; // @param {number} [options.limit] - Maximum number of results per page (default = 10)
+	const page = options.page && parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1; // @param {number} [options.page] - Current page (default = 1)
+	const skip = (page - 1) * limit;
+
+	const countPromise = this.countDocuments(filter).exec(); // @param {Object} [filter] - Mongo filter
+	let docsPromise = this.find(filter).populate({
+		path: 'chats',
+		select: 'chatID userID userName receiverUserID receiverName message userCreatedOn chatCreatedOn',
+		perDocumentLimit: 1,
+		options: { sort: { 'createdAt': -1 } }
+	})
+		.sort(sort)
+		.skip(skip)
+		.limit(limit);
+
+	docsPromise = docsPromise.exec();
+
+	return Promise.all([countPromise, docsPromise]).then((values) => {
+		const [totalResults, results] = values;
+		const totalPages = Math.ceil(totalResults / limit);
+		const result = {
+			results, //* @property {Document[]} results - Results found
+			page, // @property {number} page - current page
+			limit, // @property {number} limit - Maximum number of results per page
+			totalPages, // @property {number} totalPages - Total number of pages
+			totalResults, // @property {number} totalResults - Total number of documents
+		};
+		return Promise.resolve(result);
+	});
 };
 
 userSchema.pre('save', async function (next) {
