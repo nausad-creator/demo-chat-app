@@ -4,12 +4,8 @@ const { password, objectId } = require('./custom.validation');
 const createChat = {
 	body: Joi.object().keys({
 		userID: Joi.string().required(),
-		userName: Joi.string().required(),
 		receiverUserID: Joi.string().required(),
-		receiverName: Joi.string().required(),
-		message: Joi.string().required(),
-		apiType: Joi.string().required(),
-		apiVersion: Joi.string().required()
+		message: Joi.string().required()
 	}),
 };
 

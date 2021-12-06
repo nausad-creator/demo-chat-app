@@ -42,16 +42,11 @@ const createUser = async (userBody) => {
 	}
 };
 
-const queryUsers = async (filter, options) => {
-	const users = await User.paginate(filter, options);
-	return users;
-};
-
 const get_users = async (req_body) => {
 	const options = pick(req_body, ['sortBy', 'pagesize', 'page']);
 	const filter = {
 		userID: {
-			$ne: '0' // $ne is the not-equal to 0 (zero) userID data that we are fetching.
+			$nin: ['0', req_body.userID] // $ne is the not-equal to 0 (zero) userID data that we are fetching.
 		},
 		$expr: {
 			$regexMatch: {
@@ -106,7 +101,6 @@ const deleteUserById = async (userId) => {
 
 module.exports = {
 	createUser,
-	queryUsers,
 	get_users,
 	getUserByuserID,
 	getUserByEmail,

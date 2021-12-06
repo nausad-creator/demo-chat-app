@@ -29,12 +29,28 @@ const saveToken = async (token, userId, expires, type) => {
 };
 
 const verifyToken = async (token, type) => {
-	const payload = jwt.verify(token, config.jwt.secret);
-	const tokenDoc = await Token.findOne({ token, type, user: payload.sub }, 'user').lean().populate('user').exec();
-	if (!tokenDoc) {
-		throw new Error('Token not found.');
+	try {
+		const payload = jwt.verify(token, config.jwt.secret);
+		const tokenDoc = await Token.findOne({ token, type, user: payload.sub }, 'user').lean().populate('user').exec();
+		if (!tokenDoc) {
+			return {
+				code: 404,
+				message: 'Not found',
+				user: null
+			}
+		}
+		return {
+			code: 200,
+			message: 'Token verified',
+			user: tokenDoc
+		}
+	} catch (error) {
+		return {
+			code: 401,
+			message: 'Unauthorized',
+			user: null
+		}
 	}
-	return tokenDoc;
 };
 
 const generateAuthTokens = async (user) => {

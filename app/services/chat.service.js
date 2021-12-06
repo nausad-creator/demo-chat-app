@@ -3,26 +3,27 @@ const ApiError = require('../utils/ApiError');
 const shortid = require('shortid');
 const pick = require('../utils/pick');
 const userService = require('./user.service');
-require('../model/chat.model');
-const mongoose = require('mongoose');
-const Chat = mongoose.model('Chat');
+const Chat = require('./../model/chat.model');
 
 const create_chat = async (userBody) => {
 	try {
-		const user = await userService.getUserByuserID(userBody.userID);
+		const sender = await userService.getUserByuserID(userBody.fromUserId);
+		const receiver = await userService.getUserByuserID(userBody.toUserId);
 		const chat = await Chat.create({
 			chatID: shortid.generate(),
-			user: user._id,
-			userID: userBody.userID,
-			userName: userBody.userName,
-			receiverUserID: userBody.receiverUserID,
-			receiverName: userBody.receiverName,
+			fromUserId: userBody.fromUserId,
+			toUserId: userBody.toUserId,
+			senderName: `${userBody.senderName}`,
+			receiverName: `${userBody.receiverName}`,
 			message: userBody.message,
-			apiType: userBody.apiType,
-			apiVersion: userBody.apiVersion,
+			date: userBody.date,
+			time: userBody.time,
+			chatCreatedOn: userBody.chatCreatedOn
 		});
-		user.chats = user.chats.concat(chat);
-		await user.save();
+		sender.chats = chat;
+		receiver.chats = chat;
+		await sender.save();
+		await receiver.save();
 		return {
 			code: httpStatus.CREATED,
 			status: 'true',
@@ -42,10 +43,25 @@ const get_chats = async (req_body) => {
 	try {
 		const options = pick(req_body, ['sortBy', 'pagesize', 'page']);
 		const filter = {
-			userID: req_body.userID, receiverUserID: req_body.receiverUserID,
-			chatID: {
-				$ne: '0' // $ne is the not-equal to 0 (zero) chatID data that we are fetching.
-			},
+			'$or': [
+				{
+					'$and': [
+						{
+							'toUserId': req_body.userID
+						}, {
+							'fromUserId': req_body.receiverUserID
+						}
+					]
+				}, {
+					'$and': [
+						{
+							'toUserId': req_body.receiverUserID
+						}, {
+							'fromUserId': req_body.userID
+						}
+					]
+				},
+			],
 			message: {
 				$regex: req_body.searchword.trim(), // search query
 				$options: "i" // for case-censetive

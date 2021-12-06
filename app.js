@@ -13,8 +13,10 @@ const config = require('./config/appConfig');
 const { jwtStrategy } = require('./config/passport');
 const globalMiddleware = require('./app/middleware/errorHandler');
 const socketLib = require('./app/library/socketLib')
+const { Server } = require('socket.io');
 const fs = require('fs');
 const server = http.createServer(app);
+const io = new Server(server);
 
 // set security HTTP headers
 app.use(helmet());
@@ -53,12 +55,11 @@ fs.readdirSync(routePath).forEach(function (file) {
 // send back a 404 error for any unknown api request
 app.use(globalMiddleware.notFoundHandler);
 
-// connecting to socket-io;
-socketLib.socketSet(server);
-
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
 	logger.info('Connected to MongoDB');
 	server.listen(config.port, () => {
+		// connecting to socket-io;
+		socketLib.socketSet(io);
 		logger.info(`Listening to port ${config.port}`);
 	});
 });

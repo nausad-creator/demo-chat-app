@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { toJSON } = require('./plugins');
 const config = require('../../config/appConfig');
+const moment = require('moment');
 
 const chatSchema = mongoose.Schema(
 	{
@@ -9,25 +10,22 @@ const chatSchema = mongoose.Schema(
 			index: true,
 			unique: true
 		},
-		user: {
-			type: mongoose.SchemaTypes.ObjectId,
-			ref: "User",
-			required: true
-		},
-		userID: {
+		toUserId: {
 			type: String,
 			index: true,
-			required: true,
-		},
-		userName: {
-			type: String,
 			required: true,
 			trim: true,
 		},
-		receiverUserID: {
+		fromUserId: {
 			type: String,
 			index: true,
 			required: true,
+			trim: true,
+		},
+		senderName: {
+			type: String,
+			required: true,
+			trim: true,
 		},
 		receiverName: {
 			type: String,
@@ -38,6 +36,23 @@ const chatSchema = mongoose.Schema(
 			type: String,
 			required: true,
 			trim: true,
+		},
+		isRead: {
+			type: Boolean,
+			default: false,
+			trim: true,
+		},
+		date: {
+			type: String,
+			default: moment().format('YYYY-MM-DD'),
+			required: true,
+			trim: true
+		},
+		time: {
+			type: String,
+			default: moment().format('HH:mm:ss'),
+			required: true,
+			trim: true
 		},
 		apiType: {
 			type: String,
