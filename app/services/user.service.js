@@ -44,25 +44,62 @@ const createUser = async (userBody) => {
 
 const get_users = async (req_body) => {
 	const options = pick(req_body, ['sortBy', 'pagesize', 'page']);
-	const filter = {
-		userID: {
-			$nin: ['0', req_body.userID] // $ne is the not-equal to 0 (zero) userID data that we are fetching.
-		},
-		$expr: {
-			$regexMatch: {
-				input: {
-					$concat: [
-						"$userFirstName",
-						" ",
-						"$userLastName"
-					]
+	const aggregate = [
+		{
+			$match: {
+				userID: {
+					$nin: ['0', req_body.userID]
 				},
-				regex: req_body.searchword.trim(), // search query
-				options: "i"
+				$expr: {
+
+					$regexMatch: {
+						input: {
+							$concat: [
+								"$userFirstName",
+								" ",
+								"$userLastName"
+							]
+						},
+						regex: req_body.searchword.trim(), // search query
+						options: "i"
+					}
+				}
 			}
-		}
-	};
-	const users = await User.query_users(filter, options);
+		},
+		{
+			$lookup: {
+				from: "chats",
+				let: {
+					loginUserID: req_body.userID,
+					receiverID: "$userID"
+				},
+				pipeline: [
+					{
+						$match: {
+							$expr: {
+								$or: [
+									{
+										$and: [
+											{ $eq: ["$toUserId", "$$loginUserID"] },
+											{ $eq: ["$fromUserId", "$$receiverID"] }
+										]
+									}, {
+										$and: [
+											{ $eq: ["$toUserId", "$$receiverID"] },
+											{ $eq: ["$fromUserId", "$$loginUserID"] },
+										]
+									},
+								],
+							}
+						},
+					},
+					{ $sort: { createdAt: -1 } },
+					{ $limit: 2 }
+				],
+				as: "chats"
+			}
+		}]
+	const users = await User.query_users(aggregate, options);
 	return {
 		users
 	};

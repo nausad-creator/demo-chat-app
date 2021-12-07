@@ -2,13 +2,10 @@ const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const shortid = require('shortid');
 const pick = require('../utils/pick');
-const userService = require('./user.service');
 const Chat = require('./../model/chat.model');
 
 const create_chat = async (userBody) => {
 	try {
-		const sender = await userService.getUserByuserID(userBody.fromUserId);
-		const receiver = await userService.getUserByuserID(userBody.toUserId);
 		const chat = await Chat.create({
 			chatID: shortid.generate(),
 			fromUserId: userBody.fromUserId,
@@ -18,12 +15,9 @@ const create_chat = async (userBody) => {
 			message: userBody.message,
 			date: userBody.date,
 			time: userBody.time,
+			time_in_ms: userBody.time_in_ms,
 			chatCreatedOn: userBody.chatCreatedOn
 		});
-		sender.chats = chat;
-		receiver.chats = chat;
-		await sender.save();
-		await receiver.save();
 		return {
 			code: httpStatus.CREATED,
 			status: 'true',

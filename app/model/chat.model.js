@@ -54,6 +54,12 @@ const chatSchema = mongoose.Schema(
 			required: true,
 			trim: true
 		},
+		time_in_ms: {
+			type: Number,
+			default: new Date().getTime(),
+			required: true,
+			trim: true
+		},
 		apiType: {
 			type: String,
 			required: true,

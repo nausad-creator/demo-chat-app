@@ -74,6 +74,7 @@ const socketSet = (io) => {
 			message: userBody.message,
 			date: userBody.date,
 			time: userBody.time,
+			time_in_ms: userBody.time_in_ms,
 			chatCreatedOn: userBody.chatCreatedOn
 		});
 	});

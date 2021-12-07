@@ -65,11 +65,6 @@ const userSchema = mongoose.Schema(
 			default: 'a.png',
 			trim: true,
 		},
-		chats: {
-			type: mongoose.SchemaTypes.ObjectId,
-			ref: 'Chat',
-			required: true,
-		},
 		userDeviceType: {
 			type: String,
 			required: true,
@@ -146,12 +141,7 @@ userSchema.statics.query_users = async function (filter, options) {
 	const skip = (page - 1) * limit;
 
 	const countPromise = this.countDocuments(filter).exec(); // @param {Object} [filter] - Mongo filter
-	let docsPromise = this.find(filter).populate({
-		path: 'chats',
-		select: 'chatID toUserId fromUserId senderName receiverName message time chatCreatedOn',
-		perDocumentLimit: 1,
-		options: { sort: { 'createdAt': -1 } }
-	})
+	let docsPromise = this.aggregate(filter)
 		.sort(sort)
 		.skip(skip)
 		.limit(limit);
