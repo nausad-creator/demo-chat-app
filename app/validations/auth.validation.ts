@@ -1,7 +1,7 @@
-const Joi = require('joi');
-const { password } = require('./custom.validation');
+import Joi from 'joi';
+import { password } from './custom.validation';
 
-const register = {
+export const register = {
 	body: Joi.object().keys({
 		userFirstName: Joi.string().required(),
 		userLastName: Joi.string().required(),
@@ -17,26 +17,26 @@ const register = {
 	}),
 };
 
-const login = {
+export const login = {
 	body: Joi.object().keys({
 		userEmail: Joi.string().required(),
 		userPassword: Joi.string().required(),
 	}),
 };
 
-const logout = {
+export const logout = {
 	body: Joi.object().keys({
 		refreshToken: Joi.string().required(),
 	}),
 };
 
-const refreshTokens = {
+export const refreshTokens = {
 	body: Joi.object().keys({
 		refreshToken: Joi.string().required(),
 	}),
 };
 
-const forgotPassword = {
+export const forgotPassword = {
 	body: Joi.alternatives().try(
 		Joi.object().keys({
 			userEmail: Joi.string().allow(''),
@@ -49,14 +49,14 @@ const forgotPassword = {
 	)
 };
 
-const verification = {
+export const verification = {
 	body: Joi.object().keys({
 		userID: Joi.string().required(),
 		userOTP: Joi.string().required(),
 	}),
 };
 
-const users = {
+export const users = {
 	body: Joi.object().keys({
 		userID: Joi.string().required(),
 		searchword: Joi.string().required().allow(''),
@@ -66,27 +66,26 @@ const users = {
 	}),
 };
 
-const resetPassword = {
+export const resetPassword = {
 	body: Joi.object().keys({
 		userID: Joi.string().required(),
 		userPassword: Joi.string().required().custom(password),
 	}),
 };
 
-const verifyEmail = {
+export const verifyEmail = {
 	query: Joi.object().keys({
 		token: Joi.string().required(),
 	}),
 };
 
-module.exports = {
+export const authValidator = {
 	register,
 	login,
-	logout,
-	users,
-	refreshTokens,
 	forgotPassword,
-	verification,
 	resetPassword,
+	verification,
+	users,
 	verifyEmail,
-};
+	logout
+}

@@ -1,7 +1,7 @@
-const Joi = require('joi');
-const { password, objectId } = require('./custom.validation');
+import Joi from 'joi';
+import { password, objectId } from './custom.validation';
 
-const createChat = {
+export const createChatValidate = {
 	body: Joi.object().keys({
 		userID: Joi.string().required(),
 		receiverUserID: Joi.string().required(),
@@ -9,7 +9,7 @@ const createChat = {
 	}),
 };
 
-const getChats = {
+export const getChatsValidate = {
 	body: Joi.object().keys({
 		userID: Joi.string().required(),
 		receiverUserID: Joi.string().required(),
@@ -20,13 +20,13 @@ const getChats = {
 	})
 };
 
-const getUser = {
+export const getUserValidate = {
 	params: Joi.object().keys({
 		userId: Joi.string().custom(objectId),
 	}),
 };
 
-const updateUser = {
+export const updateUserValidate = {
 	params: Joi.object().keys({
 		userId: Joi.required().custom(objectId),
 	}),
@@ -39,16 +39,16 @@ const updateUser = {
 		.min(1),
 };
 
-const deleteUser = {
+export const deleteUserValidate = {
 	params: Joi.object().keys({
 		userId: Joi.string().custom(objectId),
 	}),
 };
 
-module.exports = {
-	createChat,
-	getChats,
-	getUser,
-	updateUser,
-	deleteUser,
-};
+export const userValidator = {
+	createChatValidate,
+	getChatsValidate,
+	getUserValidate,
+	updateUserValidate,
+	deleteUserValidate
+}

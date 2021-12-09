@@ -1,0 +1,15 @@
+{
+	"watch": [
+		"app/*",
+		"config/*",
+		"app.ts"
+	],
+	"ext": "js,json,ts",
+	"ignore": [
+		".git",
+		"node_modules"
+	],
+	"execMap": {
+		"ts": "ts-node"
+	}
+}

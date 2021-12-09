@@ -1,0 +1,29 @@
+{
+	"defaultSeverity": "error",
+	"extends": [
+	    "tslint:recommended"
+	],
+	"jsRules": {},
+	"rules": {
+	    "trailing-comma": [ false ],
+	    "indent": [false, "tabs"],
+	    "variable-name": {
+		"options": [
+			"allow-leading-underscore",
+			"allow-trailing-underscore",
+			"allow-snake-case",
+			"allow-pascal-case"
+		]
+	},
+	"space-before-function-paren": {
+		"options": {
+		  "anonymous": "always",
+		  "asyncArrow": "always",
+		  "constructor": "never",
+		  "method": "never",
+		  "named": "never"
+		}
+	}
+	},
+	"rulesDirectory": []
+}
