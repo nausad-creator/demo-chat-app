@@ -3,10 +3,11 @@ import ApiError from '../utils/ApiError';
 import shortid from 'shortid';
 import { pick } from '../utils/pick';
 import { Chat } from './../model/chat.model';
+import { ChatInterface } from '../interface';
 
 export const createChats = async (userBody: { fromUserId: string; toUserId: string; senderName: string; receiverName: string; message: string; date: string; time: string; time_in_ms: number; chatCreatedOn: string; }) => {
 	try {
-		const chat = await Chat.create({
+		const chat: ChatInterface = await Chat.create({
 			chatID: shortid.generate(),
 			fromUserId: userBody.fromUserId,
 			toUserId: userBody.toUserId,
@@ -101,12 +102,45 @@ export const getChat = async (reqbody: { userID: string; receiverUserID: string;
 	};
 };
 
-export const getChatByuserID = async (userID: string) => {
-	return Chat.findOne({ 'userID': userID });
+export const readChat = async (reqbody: { userID: string; receiverUserID: string; }) => {
+	try {
+		// query
+		const filter = {
+			$and: [
+				{
+					'toUserId': reqbody.userID
+				}, {
+					'fromUserId': reqbody.receiverUserID
+				}
+			]
+		};
+		// update
+		const update = {
+			$set: { 'isRead': true }
+		};
+		// options
+		const option = {
+			"multi": true,  // update only one document
+			"upsert": false  // insert a new document, if no existing document match the query
+		}
+		const updated = await Chat.updateMany(filter, update, option).exec();
+		return {
+			code: httpStatus.OK,
+			status: 'true',
+			message: 'Chat updated',
+			data: updated
+		};
+	} catch (err) {
+		return {
+			code: httpStatus.NOT_FOUND,
+			status: 'false',
+			message: err,
+		};
+	};
 };
 
-export const deleteChat = async (userId: string) => {
-	const user = await getChatByuserID(userId);
+export const deleteChat = async (userID: string) => {
+	const user = await Chat.findOne({ 'userID': userID });
 	if (!user) {
 		throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
 	}

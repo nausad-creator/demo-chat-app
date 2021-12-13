@@ -18,9 +18,9 @@ export interface UserI {
 	userDOB: string;
 	userCreatedDate: string;
 	languageName: string;
-	chats: Chat[];
+	chats: ChatInterface[];
 }
-export interface Chat {
+export interface ChatInterface {
 	chatID?: string;
 	fromUserId: string;
 	toUserId: string;

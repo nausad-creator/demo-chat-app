@@ -162,7 +162,7 @@ export const resetPasswordUser = async (userID: string, userNewPassword: string)
 export const getUsers = async (reqbody: { userID: string; searchword: string; }) => {
 	const options = pick(reqbody, ['sortBy', 'pagesize', 'page']);
 	const aggregate = [
-		{
+		{ // stage 1
 			$match: {
 				userID: {
 					$nin: ['0', reqbody.userID]
@@ -183,8 +183,20 @@ export const getUsers = async (reqbody: { userID: string; searchword: string; })
 				}
 			}
 		},
+		{ // stage 2
+			$project: {
+				"userDeviceType": 0,
+				"userDeviceID": 0,
+				"apiType": 0,
+				"apiVersion": 0,
+				"userPassword": 0,
+				"createdAt": 0,
+				"updatedAt": 0,
+				"__v": 0,
+			}
+		},
 		{
-			$lookup: {
+			$lookup: { // stage 3
 				from: "chats",
 				let: {
 					loginUserID: reqbody.userID,
@@ -192,30 +204,86 @@ export const getUsers = async (reqbody: { userID: string; searchword: string; })
 				},
 				pipeline: [
 					{
-						$match: {
-							$expr: {
-								$or: [
-									{
-										$and: [
-											{ $eq: ["$toUserId", "$$loginUserID"] },
-											{ $eq: ["$fromUserId", "$$receiverID"] }
-										]
-									}, {
-										$and: [
-											{ $eq: ["$toUserId", "$$receiverID"] },
-											{ $eq: ["$fromUserId", "$$loginUserID"] },
-										]
+						$facet: {
+							"recent_chat": [ // stage 3 - (1)
+								{
+									$match: {
+										$expr: {
+											$or: [
+												{
+													$and: [
+														{ $eq: ["$toUserId", "$$loginUserID"] },
+														{ $eq: ["$fromUserId", "$$receiverID"] }
+													]
+												}, {
+													$and: [
+														{ $eq: ["$toUserId", "$$receiverID"] },
+														{ $eq: ["$fromUserId", "$$loginUserID"] },
+													]
+												},
+											],
+										}
 									},
-								],
-							}
-						},
+								},
+								{ $sort: { createdAt: -1 } },
+								{ $limit: 1 }, // for showing latest chat only
+								{
+									$project: {
+										"chatID": true, // or 1
+										"toUserId": true,
+										"fromUserId": true,
+										"senderName": true,
+										"receiverName": true,
+										"message": true,
+										"isRead": true,
+										"date": true,
+										"time": true,
+										"time_in_ms": true,
+										"_id": false, // don't want ~id
+										"date_with_time": { $concat: ["$date", " ", "$time"] } // new key added - date_with_time
+									}
+								},
+							],
+							"unread": [ // stage 3 - (2)
+								{
+									$match: {
+										$expr: {
+											$and: [
+												{ $eq: ["$toUserId", "$$loginUserID"] },
+												{ $eq: ["$fromUserId", "$$receiverID"] }
+											]
+										}
+									},
+								},
+								{
+									$match: {
+										'isRead': false
+									}
+								},
+								{
+									$project: {
+										"chatID": true, // or 1
+										"toUserId": true,
+										"fromUserId": true,
+										"senderName": true,
+										"receiverName": true,
+										"message": true,
+										"isRead": true,
+										"date": true,
+										"time": true,
+										"time_in_ms": true,
+										"_id": false, // don't want ~id
+										"date_with_time": { $concat: ["$date", " ", "$time"] } // new key added - date_with_time
+									}
+								},
+							]
+						}
 					},
-					{ $sort: { createdAt: -1 } },
-					{ $limit: 2 }
 				],
 				as: "chats"
 			}
-		}]
+		},
+	]
 
 	let sort = '';
 	if (options.sortBy) { // @param {string} [options.sortBy] - Sorting criteria using the format: sortField:(desc|asc). Multiple sorting criteria should be separated by commas (,)
