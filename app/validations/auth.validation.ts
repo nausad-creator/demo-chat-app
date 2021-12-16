@@ -85,6 +85,7 @@ export const authValidator = {
 	forgotPassword,
 	resetPassword,
 	verification,
+	refreshTokens,
 	users,
 	verifyEmail,
 	logout

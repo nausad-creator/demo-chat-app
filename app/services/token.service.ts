@@ -53,13 +53,19 @@ export const verifyToken = async (token: string, type: string) => {
 };
 
 export const generateAuthTokens = async (user: UserI) => {
-	const accessTokenExpires = moment().add(jwtConfig.accessExpirationMinutes, 'minutes');
-	const accessToken = generateToken(user._id.toString(), accessTokenExpires, tokenTypes.ACCESS, user);
-	await saveToken(accessToken, user._id.toString(), accessTokenExpires, tokenTypes.ACCESS);
+	const accessExpires = moment().add(jwtConfig.accessExpirationMinutes, 'minutes');
+	const access = generateToken(user._id.toString(), accessExpires, tokenTypes.ACCESS, user);
+	const refreshExpires = moment().add(jwtConfig.refreshExpirationDays, 'days');
+	const refresh = generateToken(user._id.toString(), refreshExpires, tokenTypes.REFRESH, user);
+	await saveToken(refresh, user._id.toString(), refreshExpires, tokenTypes.REFRESH);
 	return {
 		access: {
-			token: accessToken,
-			expires: accessTokenExpires.toDate(),
-		}
+			token: access,
+			expires: accessExpires.toDate(),
+		},
+		refresh: {
+			token: refresh,
+			expires: refreshExpires.toDate(),
+		},
 	};
 };

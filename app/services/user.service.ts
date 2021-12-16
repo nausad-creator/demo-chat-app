@@ -2,10 +2,13 @@ import httpStatus from 'http-status';
 import ApiError from '../utils/ApiError';
 import shortid from 'shortid';
 import { pick } from '../utils/pick';
+import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { User } from './../model/user.model';
 import { Token } from '../model/token.model';
 import { tokenTypes } from '../../config/tokens';
+import { generateAuthTokens, verifyToken } from './token.service';
+import { jwtConfig } from '../../config/appConfig';
 
 export const registerUser = async (userBody: { userEmail: string; userMobile: string; userFirstName: string; userLastName: string; userCountryCode: string; userPassword: string; userProfilePicture: string; userDeviceType: string; userDeviceID: string; apiType: string; apiVersion: string; }) => {
 	if (!!await User.findOne({ "userEmail": userBody.userEmail })) {
@@ -342,4 +345,41 @@ export const logout = async (refreshToken: string) => {
 		throw new ApiError(httpStatus.NOT_FOUND, 'Not found');
 	}
 	await refreshTokenDoc.remove();
+};
+
+export const refreshAuthToken = async (refreshToken: string) => {
+	try {
+		const payload = jwt.verify(refreshToken, jwtConfig.secret);
+		const tokenDoc = await Token.findOne({ refreshToken, type: tokenTypes.REFRESH, user: payload.sub }, 'user');
+		if (!tokenDoc) {
+			return {
+				code: 404,
+				message: 'Not found',
+				token: null
+			}
+		}
+		const user = await User.findOne(tokenDoc.user);
+		if (!user) {
+			return {
+				code: 404,
+				message: 'Not found',
+				token: null
+			}
+		}
+		await tokenDoc.remove();
+		const newlyGenerated = await generateAuthTokens(user);
+		if (!user) {
+			return {
+				code: 200,
+				message: 'User found',
+				token: newlyGenerated
+			}
+		}
+	} catch (error) {
+		return {
+			code: httpStatus.UNAUTHORIZED,
+			status: 'false',
+			message: error,
+		};
+	}
 };

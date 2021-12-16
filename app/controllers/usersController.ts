@@ -1,7 +1,7 @@
 import { catchAsync } from '../utils/catchAsync';
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { registerUser, loginUser, forgot, getUsers, resetPasswordUser, verify } from '../services/user.service';
+import { registerUser, loginUser, forgot, getUsers, resetPasswordUser, verify, refreshAuthToken } from '../services/user.service';
 import { generateAuthTokens } from '../services/token.service';
 
 export const register = catchAsync(async (req: Request, res: Response) => {
@@ -39,6 +39,21 @@ export const login = catchAsync(async (req: Request, res: Response) => {
 				data: user?.data
 			}]);
 		}
+	} catch (err) {
+		res.send([{
+			code: httpStatus.BAD_REQUEST,
+			status: 'false',
+			message: err,
+		}]);
+	};
+});
+
+export const refreshAuth = catchAsync(async (req: Request, res: Response) => {
+	try {
+		const token = await refreshAuthToken(req.body.refreshToken);
+		res.send([{
+			token
+		}]);
 	} catch (err) {
 		res.send([{
 			code: httpStatus.BAD_REQUEST,
